@@ -16,10 +16,10 @@ use std::time::{Duration, Instant};
 // Constants
 // ============================================================================
 
-const DEFAULT_ICON: &str = "i8958";
-const BUS_ICON: &str = "i7956";
-const BOAT_ICON: &str = "i12186";
-const ERROR_ICON: &str = "i555"; // Warning icon
+const DEFAULT_ICON: &str = "541";
+const BUS_ICON: &str = "541";
+const BOAT_ICON: &str = "541";
+const ERROR_ICON: &str = "541";
 const CACHE_TTL_SECS: u64 = 3600; // 1 hour cache for stops
 
 // Popular stops in Nantes for dropdown suggestions
