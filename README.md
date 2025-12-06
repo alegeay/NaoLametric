@@ -9,13 +9,7 @@ Affiche les temps d'attente des transports en commun nantais (TAN) sur votre LaM
 
 ## Aperçu
 
-```
-┌─────────────────────────┐
-│  🚊  L1 3mn             │
-│  🚊  L1 8mn             │
-│  🚌  C1 12mn            │
-└─────────────────────────┘
-```
+![LaMetric Time affichant NaoLaMetric](image.png)
 
 ## Caractéristiques
 
@@ -168,13 +162,6 @@ Documentation complète au format JSON.
 | `FMIT` | François Mitterrand | 1 |
 
 Rechercher un arrêt : `curl "http://localhost:8080/stops?search=commerce"`
-
-## Variables d'environnement
-
-| Variable | Description | Défaut |
-|----------|-------------|--------|
-| `PORT` | Port du serveur | `8080` |
-| `NAOLIB_STOP_CODE` | Code arrêt par défaut | - |
 
 ## Icônes LaMetric
 
