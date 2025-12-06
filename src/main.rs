@@ -228,8 +228,8 @@ fn formater_reponse(passages: Vec<PassageNaolib>, params: &Params) -> String {
         .into_iter()
         .filter(|p| {
             !p.temps.is_empty()
-                && params.line.as_ref().map_or(true, |l| p.ligne.num_ligne.eq_ignore_ascii_case(l))
-                && params.direction.map_or(true, |d| p.sens == d)
+                && params.line.as_ref().is_none_or(|l| p.ligne.num_ligne.eq_ignore_ascii_case(l))
+                && params.direction.is_none_or(|d| p.sens == d)
         })
         .take(params.limit)
         .collect();
