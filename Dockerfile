@@ -1,5 +1,5 @@
 # Étape 1 : Compilation avec nightly + build-std
-FROM container-registry.charlie.cnieg.fr/proxy.docker.io/rust:1.83-alpine AS builder
+FROM rust:1.83-alpine AS builder
 
 RUN apk add --no-cache musl-dev upx
 
