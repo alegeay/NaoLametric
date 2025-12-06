@@ -5,7 +5,7 @@ Affiche les temps d'attente des transports en commun nantais (TAN) sur LaMetric 
 [![Rust](https://img.shields.io/badge/Rust-1.83+-orange?logo=rust)](https://www.rust-lang.org/)
 [![Docker](https://img.shields.io/badge/Docker-652KB-blue?logo=docker)](https://hub.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![CI](https://github.com/music-analysis/naolametric/actions/workflows/ci.yml/badge.svg)](https://github.com/music-analysis/naolametric/actions)
+[![CI](https://github.com/alegeay/NaoLametric/actions/workflows/ci.yml/badge.svg)](https://github.com/alegeay/NaoLametric/actions)
 
 ![LaMetric Time affichant NaoLaMetric](image.png)
 
@@ -53,7 +53,7 @@ docker run -d -p 8080:8080 --name naolametric ghcr.io/music-analysis/naolametric
 ```yaml
 services:
   naolametric:
-    image: ghcr.io/music-analysis/naolametric:latest
+    image: ghcr.io/alegeay/NaoLametric:latest
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -62,7 +62,7 @@ services:
 ### Build local
 
 ```bash
-git clone https://github.com/music-analysis/naolametric.git
+git clone https://github.com/NaoLametric/naolametric.git
 cd naolametric
 docker build -t naolametric .
 docker run -d -p 8080:8080 naolametric
