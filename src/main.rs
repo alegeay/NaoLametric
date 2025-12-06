@@ -22,20 +22,19 @@ const API_URL: &str = "https://open.tan.fr/ewp";
 // Arrêts populaires - tableau compile-time
 const ARRETS_POPULAIRES: &str = r#"[
 {"code":"COMM","name":"Commerce"},
-{"code":"GANO","name":"Gare de Nantes"},
+{"code":"GSNO","name":"Gare Nord - Jardin des Plantes"},
 {"code":"CRQU","name":"Place du Cirque"},
-{"code":"MEDI","name":"Médiathèque"},
-{"code":"HBLI","name":"Hôtel de Ville"},
-{"code":"ORVL","name":"Orvault Grand Val"},
-{"code":"NEUP","name":"Neustrie"},
-{"code":"CTRE","name":"Centre"},
-{"code":"VERT","name":"Vertou"},
-{"code":"STDO","name":"Saint-Donatien"},
-{"code":"CICE","name":"Cité des Congrès"},
-{"code":"JAUR","name":"Jaurès"},
-{"code":"5050","name":"50 Otages"},
-{"code":"PLDU","name":"Place du Duc"},
-{"code":"LNCS","name":"Ligne Campus"}
+{"code":"HVNA","name":"Hôtel de Ville"},
+{"code":"OGVA","name":"Orvault Grand Val"},
+{"code":"NETR","name":"Neustrie"},
+{"code":"VTOU","name":"Vertou"},
+{"code":"SDON","name":"St-Donatien"},
+{"code":"OTAG","name":"50 Otages"},
+{"code":"BOFA","name":"Bouffay"},
+{"code":"DCAN","name":"Duchesse Anne - Château"},
+{"code":"BJOI","name":"Beaujoire"},
+{"code":"FMIT","name":"François Mitterrand"},
+{"code":"HALU","name":"Haluchère - Batignolles"}
 ]"#;
 
 // Header Content-Type JSON pré-alloué
