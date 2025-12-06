@@ -2,10 +2,11 @@
 
 Affiche les temps d'attente des transports en commun nantais (TAN) sur LaMetric Time.
 
+[![Release](https://github.com/alegeay/naolametric/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/alegeay/naolametric/actions/workflows/release.yml)
+[![PR Pipeline](https://github.com/alegeay/naolametric/actions/workflows/pr_pipeline.yml/badge.svg)](https://github.com/alegeay/naolametric/actions/workflows/pr_pipeline.yml)
 [![Rust](https://img.shields.io/badge/Rust-1.83+-orange?logo=rust)](https://www.rust-lang.org/)
-[![Docker](https://img.shields.io/badge/Docker-652KB-blue?logo=docker)](https://hub.docker.com/)
+[![Docker](https://img.shields.io/badge/Docker-652KB-blue?logo=docker)](https://ghcr.io/alegeay/naolametric)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![CI](https://github.com/alegeay/NaoLametric/actions/workflows/ci.yml/badge.svg)](https://github.com/alegeay/NaoLametric/actions)
 
 ![LaMetric Time affichant NaoLaMetric](image.png)
 
