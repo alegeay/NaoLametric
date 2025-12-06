@@ -128,7 +128,7 @@ curl "http://localhost:8080/?stop=COMM&limit=5&show_terminus=true"
 
 | Paramètre | Type | Requis | Description |
 |-----------|------|--------|-------------|
-| `stop` | string | **Oui** | Code arrêt (ex: `COMM`, `GANO`) |
+| `stop` | string | **Oui** | Code arrêt (ex: `COMM`, `GSNO`) |
 | `line` | string | Non | Numéro de ligne (ex: `1`, `C1`) |
 | `direction` | int | Non | Direction : `1` ou `2` |
 | `limit` | int | Non | Nombre de résultats (1-10) |
@@ -157,11 +157,15 @@ Documentation complète au format JSON.
 | Code | Nom | Lignes principales |
 |------|-----|-------------------|
 | `COMM` | Commerce | 1, 2, 3 |
-| `GANO` | Gare de Nantes | 1, C1, C6 |
+| `GSNO` | Gare Nord - Jardin des Plantes | 1 |
 | `CRQU` | Place du Cirque | 2, 3 |
-| `MEDI` | Médiathèque | 1 |
-| `HBLI` | Hôtel de Ville | 1, C1 |
-| `CICE` | Cité des Congrès | 1, C1 |
+| `HVNA` | Hôtel de Ville | 1, C1 |
+| `OGVA` | Orvault Grand Val | 2 |
+| `NETR` | Neustrie | 3 |
+| `OTAG` | 50 Otages | 2, 3 |
+| `BOFA` | Bouffay | 1 |
+| `BJOI` | Beaujoire | 1 |
+| `FMIT` | François Mitterrand | 1 |
 
 Rechercher un arrêt : `curl "http://localhost:8080/stops?search=commerce"`
 
