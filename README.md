@@ -1,27 +1,28 @@
-# NaoLaMetric
+# 🚊 NaoLaMetric
 
-Affiche les temps d'attente des transports en commun nantais (TAN) sur votre LaMetric Time en temps réel.
+Affiche les temps d'attente des transports en commun nantais (TAN) sur LaMetric Time.
 
 [![Rust](https://img.shields.io/badge/Rust-1.83+-orange?logo=rust)](https://www.rust-lang.org/)
 [![Docker](https://img.shields.io/badge/Docker-652KB-blue?logo=docker)](https://hub.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![CI](https://github.com/votre-repo/naolametric/actions/workflows/ci.yml/badge.svg)](https://github.com/votre-repo/naolametric/actions)
-
-## Aperçu
+[![CI](https://github.com/music-analysis/naolametric/actions/workflows/ci.yml/badge.svg)](https://github.com/music-analysis/naolametric/actions)
 
 ![LaMetric Time affichant NaoLaMetric](image.png)
 
-## Caractéristiques
+---
 
-| Fonctionnalité | Description |
-|----------------|-------------|
-| **Temps réel** | Données live depuis l'API Naolib/TAN |
-| **Ultra-léger** | Image Docker de seulement **652 KB** |
-| **Rapide** | Démarrage instantané, ~2ms par requête |
-| **Compatible LaMetric** | Format JSON natif pour LaMetric Time |
-| **Cache intelligent** | 1182 arrêts en cache, rafraîchi toutes les heures |
+## ✨ Caractéristiques
 
-## Architecture
+| | Fonctionnalité | Description |
+|:--:|----------------|-------------|
+| ⚡ | Temps réel | Données live depuis l'API Naolib/TAN |
+| 🪶 | Ultra-léger | Image Docker de 652 KB |
+| 🚀 | Rapide | ~2ms par requête |
+| 💾 | Cache intelligent | 1182 arrêts en mémoire, rafraîchi toutes les heures |
+
+---
+
+## 🏗️ Architecture
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
@@ -35,18 +36,16 @@ Affiche les temps d'attente des transports en commun nantais (TAN) sur votre LaM
                      └─────────────┘
 ```
 
-**Stack technique :**
-- `tiny_http` - Serveur HTTP minimaliste
-- `minreq` - Client HTTP avec TLS (rustls)
-- `serde_json` - Parsing JSON
-- Compilation statique avec musl + compression UPX
+**Stack :** `tiny_http`, `minreq` (rustls), `serde_json`, musl + UPX
 
-## Installation
+---
 
-### Docker (recommandé)
+## 📦 Installation
+
+### Docker
 
 ```bash
-docker run -d -p 8080:8080 --name naolametric ghcr.io/votre-repo/naolametric:latest
+docker run -d -p 8080:8080 --name naolametric ghcr.io/music-analysis/naolametric:latest
 ```
 
 ### Docker Compose
@@ -54,7 +53,7 @@ docker run -d -p 8080:8080 --name naolametric ghcr.io/votre-repo/naolametric:lat
 ```yaml
 services:
   naolametric:
-    image: ghcr.io/votre-repo/naolametric:latest
+    image: ghcr.io/music-analysis/naolametric:latest
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -63,20 +62,22 @@ services:
 ### Build local
 
 ```bash
-git clone https://github.com/votre-repo/naolametric.git
+git clone https://github.com/music-analysis/naolametric.git
 cd naolametric
 docker build -t naolametric .
 docker run -d -p 8080:8080 naolametric
 ```
 
-### Cargo (développement)
+### Cargo
 
 ```bash
 cargo build --release
 ./target/release/naolametric
 ```
 
-## Utilisation rapide
+---
+
+## 🚀 Utilisation
 
 ```bash
 # Prochains passages à Commerce
@@ -89,7 +90,7 @@ curl "http://localhost:8080/?stop=COMM&line=1&direction=1"
 curl "http://localhost:8080/?stop=COMM&limit=5&show_terminus=true"
 ```
 
-**Réponse :**
+Réponse :
 ```json
 {
   "frames": [
@@ -99,57 +100,51 @@ curl "http://localhost:8080/?stop=COMM&limit=5&show_terminus=true"
 }
 ```
 
-## Configuration LaMetric Time
+---
 
-### Option 1 : My Data DIY (simple)
+## 📺 Configuration LaMetric Time
+
+### My Data DIY (simple)
 
 1. Installer l'app **My Data DIY** sur votre LaMetric
-2. Configurer l'URL :
-   ```
-   http://VOTRE_IP:8080/?stop=COMM&line=1&direction=1
-   ```
-3. Poll frequency : **30 secondes**
+2. URL : `http://VOTRE_IP:8080/?stop=COMM&line=1&direction=1`
+3. Poll frequency : 30 secondes
 
-### Option 2 : Application personnalisée
+### Application personnalisée
 
 1. Créer un compte sur [developer.lametric.com](https://developer.lametric.com)
 2. Créer une **Indicator App** en mode **Poll**
 3. URL : `http://VOTRE_SERVEUR:8080/?stop={{stop}}&line={{line}}&direction={{direction}}`
 
-## API Reference
+---
 
-### `GET /` - Temps d'attente
+## 📖 API
+
+### `GET /` — Temps d'attente
 
 | Paramètre | Type | Requis | Description |
 |-----------|------|--------|-------------|
-| `stop` | string | **Oui** | Code arrêt (ex: `COMM`, `GSNO`) |
-| `line` | string | Non | Numéro de ligne (ex: `1`, `C1`) |
-| `direction` | int | Non | Direction : `1` ou `2` |
-| `limit` | int | Non | Nombre de résultats (1-10) |
-| `show_terminus` | bool | Non | Afficher la destination |
+| `stop` | string | oui | Code arrêt (ex: `COMM`, `GSNO`) |
+| `line` | string | non | Numéro de ligne (ex: `1`, `C1`) |
+| `direction` | int | non | Direction : `1` ou `2` |
+| `limit` | int | non | Nombre de résultats (1-10) |
+| `show_terminus` | bool | non | Afficher la destination |
 
-### `GET /stops` - Recherche d'arrêts
+### Autres endpoints
 
-```bash
-curl "http://localhost:8080/stops?search=gare&limit=10"
-```
+| Endpoint | Description |
+|----------|-------------|
+| `GET /stops?search=gare` | Recherche d'arrêts |
+| `GET /popular-stops` | Arrêts les plus fréquentés |
+| `GET /health` | Health check |
+| `GET /info` | Documentation API |
 
-### `GET /popular-stops` - Arrêts populaires
+---
 
-Retourne les arrêts les plus fréquentés pour les dropdowns.
+## 🚏 Arrêts courants
 
-### `GET /health` - Health check
-
-Retourne `OK` si le serveur fonctionne.
-
-### `GET /info` - Documentation API
-
-Documentation complète au format JSON.
-
-## Arrêts courants
-
-| Code | Nom | Lignes principales |
-|------|-----|-------------------|
+| Code | Nom | Lignes |
+|------|-----|--------|
 | `COMM` | Commerce | 1, 2, 3 |
 | `GSNO` | Gare Nord - Jardin des Plantes | 1 |
 | `CRQU` | Place du Cirque | 2, 3 |
@@ -163,16 +158,20 @@ Documentation complète au format JSON.
 
 Rechercher un arrêt : `curl "http://localhost:8080/stops?search=commerce"`
 
-## Icônes LaMetric
+---
 
-| Type | Lignes | ID Icône |
-|------|--------|----------|
+## 🎨 Icônes LaMetric
+
+| Type | Lignes | ID |
+|------|--------|-----|
 | 🚊 Tramway | 1, 2, 3 | 8958 |
 | 🚌 Bus | Autres | 7956 |
 | ⛴️ Navibus | N1, N2... | 12186 |
-| ⚠️ Erreur | - | 555 |
+| ⚠️ Erreur | — | 555 |
 
-## Messages d'erreur
+---
+
+## ⚠️ Messages d'erreur
 
 | Message | Cause |
 |---------|-------|
@@ -182,24 +181,23 @@ Rechercher un arrêt : `curl "http://localhost:8080/stops?search=commerce"`
 | `API err` | Erreur API TAN |
 | `Aucun` | Aucun passage prévu |
 
-## Développement
+---
+
+## 🛠️ Développement
 
 ```bash
-# Lancer en mode dev
-cargo run
-
-# Build release optimisé
-cargo build --release
-
-# Lancer sur un autre port
-PORT=9090 cargo run
+cargo run                    # Mode dev
+cargo build --release        # Build optimisé
+PORT=9090 cargo run          # Autre port
 ```
 
-## Licence
+---
+
+## 📄 Licence
 
 MIT
 
 ## Crédits
 
-- Données temps réel : [API Naolib / TAN Nantes](https://open.tan.fr)
+- Données : [API Naolib / TAN Nantes](https://open.tan.fr)
 - Icônes : [LaMetric Icon Gallery](https://developer.lametric.com/icons)
