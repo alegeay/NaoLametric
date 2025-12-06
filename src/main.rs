@@ -39,17 +39,21 @@ const ARRETS_POPULAIRES: &str = r#"[
 
 // Header Content-Type JSON pré-alloué
 static JSON_HEADER: LazyLock<Header> = LazyLock::new(|| {
-    Header::from_bytes(&b"Content-Type"[..], &b"application/json; charset=utf-8"[..]).unwrap()
+    Header::from_bytes(
+        &b"Content-Type"[..],
+        &b"application/json; charset=utf-8"[..],
+    )
+    .unwrap()
 });
 
 // ============================================================================
 // Fonctions HTTP (minreq - ultra-minimal)
 // ============================================================================
 
-fn http_get_json<T: serde::de::DeserializeOwned>(url: &str) -> Result<T, Box<dyn std::error::Error>> {
-    let response = minreq::get(url)
-        .with_timeout(HTTP_TIMEOUT_SECS)
-        .send()?;
+fn http_get_json<T: serde::de::DeserializeOwned>(
+    url: &str,
+) -> Result<T, Box<dyn std::error::Error>> {
+    let response = minreq::get(url).with_timeout(HTTP_TIMEOUT_SECS).send()?;
     Ok(serde_json::from_str(response.as_str()?)?)
 }
 
@@ -156,11 +160,17 @@ struct ReponseLaMetric {
 
 impl ReponseLaMetric {
     fn erreur(message: &'static str) -> String {
-        format!(r#"{{"frames":[{{"icon":"{}","text":"{}"}}]}}"#, ICONE_ERREUR, message)
+        format!(
+            r#"{{"frames":[{{"icon":"{}","text":"{}"}}]}}"#,
+            ICONE_ERREUR, message
+        )
     }
 
     fn simple(icone: &'static str, texte: &str) -> String {
-        format!(r#"{{"frames":[{{"icon":"{}","text":"{}"}}]}}"#, icone, texte)
+        format!(
+            r#"{{"frames":[{{"icon":"{}","text":"{}"}}]}}"#,
+            icone, texte
+        )
     }
 }
 
@@ -228,7 +238,10 @@ fn formater_reponse(passages: Vec<PassageNaolib>, params: &Params) -> String {
         .into_iter()
         .filter(|p| {
             !p.temps.is_empty()
-                && params.line.as_ref().is_none_or(|l| p.ligne.num_ligne.eq_ignore_ascii_case(l))
+                && params
+                    .line
+                    .as_ref()
+                    .is_none_or(|l| p.ligne.num_ligne.eq_ignore_ascii_case(l))
                 && params.direction.is_none_or(|d| p.sens == d)
         })
         .take(params.limit)
@@ -258,7 +271,8 @@ fn formater_reponse(passages: Vec<PassageNaolib>, params: &Params) -> String {
         })
         .collect();
 
-    serde_json::to_string(&ReponseLaMetric { frames }).unwrap_or_else(|_| ReponseLaMetric::erreur("JSON err"))
+    serde_json::to_string(&ReponseLaMetric { frames })
+        .unwrap_or_else(|_| ReponseLaMetric::erreur("JSON err"))
 }
 
 // ============================================================================
@@ -324,7 +338,10 @@ fn handle_stops(params: &Params) -> (u16, String) {
         if count > 0 {
             result.push(',');
         }
-        result.push_str(&format!(r#"{{"codeLieu":"{}","libelle":"{}"}}"#, code, libelle));
+        result.push_str(&format!(
+            r#"{{"codeLieu":"{}","libelle":"{}"}}"#,
+            code, libelle
+        ));
         count += 1;
 
         if count >= limit {
