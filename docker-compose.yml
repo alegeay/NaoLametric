@@ -3,9 +3,4 @@ services:
     build: .
     ports:
       - "8080:8080"
-    environment:
-      - NAOLIB_STOP_CODE=${NAOLIB_STOP_CODE}
-      - NAOLIB_LINE=${NAOLIB_LINE:-}
-      - NAOLIB_DIRECTION=${NAOLIB_DIRECTION:-}
-      - PORT=8080
     restart: unless-stopped
