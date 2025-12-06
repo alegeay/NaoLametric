@@ -1,35 +1,37 @@
-# Build stage
-FROM rust:1.83-alpine AS builder
+# Étape 1 : Compilation avec nightly + build-std
+FROM container-registry.charlie.cnieg.fr/proxy.docker.io/rust:1.83-alpine AS builder
 
-RUN apk add --no-cache musl-dev openssl-dev openssl-libs-static pkgconfig
+RUN apk add --no-cache musl-dev upx
+
+# Installer nightly et rust-src
+RUN rustup toolchain install nightly \
+    && rustup component add rust-src --toolchain nightly
 
 WORKDIR /app
 
-# Copy manifests
+# Cache des dépendances
 COPY Cargo.toml Cargo.lock* ./
+RUN mkdir src && echo "fn main() {}" > src/main.rs \
+    && RUSTFLAGS="-Zunstable-options -Cpanic=abort" cargo +nightly build --release \
+       -Z build-std=std,panic_abort \
+       --target x86_64-unknown-linux-musl \
+    && rm -rf src
 
-# Create dummy main.rs to cache dependencies
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-RUN cargo build --release
-RUN rm -rf src
-
-# Copy actual source code
+# Compilation du binaire avec build-std
 COPY src ./src
+RUN touch src/main.rs \
+    && RUSTFLAGS="-Zunstable-options -Cpanic=abort" cargo +nightly build --release \
+       -Z build-std=std,panic_abort \
+       --target x86_64-unknown-linux-musl \
+    && strip target/x86_64-unknown-linux-musl/release/naolametric \
+    && upx --best --lzma target/x86_64-unknown-linux-musl/release/naolametric
 
-# Build the actual binary
-RUN touch src/main.rs && cargo build --release
+# Étape 2 : Image scratch
+FROM scratch
 
-# Runtime stage
-FROM alpine:3.19
-
-RUN apk add --no-cache ca-certificates libssl3
-
-WORKDIR /app
-
-COPY --from=builder /app/target/release/naolametric /app/naolametric
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/naolametric /naolametric
 
 ENV PORT=8080
-
 EXPOSE 8080
 
-CMD ["/app/naolametric"]
+ENTRYPOINT ["/naolametric"]
