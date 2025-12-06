@@ -23,6 +23,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set image name to lowercase
+        run: echo "IMAGE_NAME_LC=${IMAGE_NAME,,}" >> $GITHUB_ENV
+        env:
+          IMAGE_NAME: ${{ github.repository }}
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -80,8 +85,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.majorMinorPatch }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ env.majorMinorPatch }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -99,13 +104,13 @@ jobs:
 
       # Integration tests
       - name: Pull image
-        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.majorMinorPatch }}
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ env.majorMinorPatch }}
 
       - name: Run container
         run: |
           docker run -d --name naolametric-test \
             -p 8080:8080 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.majorMinorPatch }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ env.majorMinorPatch }}
           sleep 3
 
       - name: Test health endpoint
