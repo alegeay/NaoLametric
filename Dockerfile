@@ -41,6 +41,9 @@ RUN RUST_TARGET=$(cat /tmp/rust_target) \
 # Étape 2 : Image scratch
 FROM scratch
 
+# Copier les certificats SSL pour HTTPS
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
 COPY --from=builder /naolametric-bin /naolametric
 
 ENV PORT=8080
