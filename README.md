@@ -1,36 +1,72 @@
-# NaoLaMetric
+# 🚊 NaoLaMetric
 
-Affiche les temps d'attente des transports en commun nantais (TAN) sur votre LaMetric Time en temps réel.
+Affiche les temps d'attente des transports en commun nantais (TAN) sur LaMetric Time.
 
-![Rust](https://img.shields.io/badge/Rust-1.70+-orange)
-![License](https://img.shields.io/badge/license-MIT-blue)
+[![Release](https://github.com/alegeay/naolametric/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/alegeay/naolametric/actions/workflows/release.yml)
+[![PR Pipeline](https://github.com/alegeay/naolametric/actions/workflows/pr_pipeline.yml/badge.svg)](https://github.com/alegeay/naolametric/actions/workflows/pr_pipeline.yml)
+[![Rust](https://img.shields.io/badge/Rust-1.83+-orange?logo=rust)](https://www.rust-lang.org/)
+[![Docker](https://img.shields.io/badge/Docker-652KB-blue?logo=docker)](https://ghcr.io/alegeay/naolametric)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-## Apercu
+![LaMetric Time affichant NaoLaMetric](image.png)
+
+---
+
+## ✨ Caractéristiques
+
+| | Fonctionnalité | Description |
+|:--:|----------------|-------------|
+| ⚡ | Temps réel | Données live depuis l'API Naolib/TAN |
+| 🪶 | Ultra-léger | Image Docker de 652 KB |
+| 🚀 | Rapide | ~2ms par requête |
+| 💾 | Cache intelligent | 1182 arrêts en mémoire, rafraîchi toutes les heures |
+
+---
+
+## 🏗️ Architecture
 
 ```
-┌─────────────────────────┐
-│  🚊  L1 3mn             │
-│  🚊  L1 8mn             │
-└─────────────────────────┘
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  LaMetric    │────▶│ NaoLaMetric  │────▶│  API TAN     │
+│  Time        │◀────│  (Rust)      │◀────│  (Naolib)    │
+└──────────────┘     └──────────────┘     └──────────────┘
+                            │
+                     ┌──────┴──────┐
+                     │ Cache arrêts│
+                     │ (in-memory) │
+                     └─────────────┘
 ```
 
-## Fonctionnalités
+**Stack :** `tiny_http`, `minreq` (rustls), `serde_json`, musl + UPX
 
-- Temps d'attente en temps réel depuis l'API Naolib/TAN
-- Filtrage par ligne et direction
-- Icônes adaptées (tramway, bus, navibus)
-- Validation des codes d'arrêt
-- Configuration via URL (compatible LaMetric)
-- Cache intelligent des arrêts
+---
 
-## Installation
+## 📦 Installation
 
-### Docker (recommandé)
+### Docker
 
 ```bash
-git clone https://github.com/votre-repo/naolametric.git
+docker run -d -p 8080:8080 --name naolametric ghcr.io/music-analysis/naolametric:latest
+```
+
+### Docker Compose
+
+```yaml
+services:
+  naolametric:
+    image: ghcr.io/alegeay/NaoLametric:latest
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+```
+
+### Build local
+
+```bash
+git clone https://github.com/NaoLametric/naolametric.git
 cd naolametric
-docker-compose up -d
+docker build -t naolametric .
+docker run -d -p 8080:8080 naolametric
 ```
 
 ### Cargo
@@ -40,269 +76,129 @@ cargo build --release
 ./target/release/naolametric
 ```
 
-Le serveur démarre sur le port `8080` par défaut.
+---
 
-## Utilisation rapide
-
-### Exemples de requêtes
+## 🚀 Utilisation
 
 ```bash
 # Prochains passages à Commerce
 curl "http://localhost:8080/?stop=COMM"
 
-# Ligne 1 à Souillarderie vers François Mitterrand
-curl "http://localhost:8080/?stop=SOUI&line=1&direction=1"
+# Ligne 1 direction François Mitterrand
+curl "http://localhost:8080/?stop=COMM&line=1&direction=1"
 
-# Avec la destination affichée
-curl "http://localhost:8080/?stop=SOUI&line=1&direction=1&show_terminus=true"
-
-# 5 prochains passages à Gare de Nantes
-curl "http://localhost:8080/?stop=GANO&limit=5"
+# 5 passages avec destination affichée
+curl "http://localhost:8080/?stop=COMM&limit=5&show_terminus=true"
 ```
 
-### Réponse LaMetric
-
+Réponse :
 ```json
 {
   "frames": [
-    { "icon": "i8958", "text": "L1 3mn" },
-    { "icon": "i8958", "text": "L1 8mn" }
+    { "icon": "8958", "text": "L1 2mn" },
+    { "icon": "8958", "text": "L1 6mn" }
   ]
 }
 ```
 
-## Configuration LaMetric Time
+---
 
-### Option 1 : My Data DIY (simple)
+## 📺 Configuration LaMetric Time
 
-1. Ouvrir l'app **LaMetric Time** sur votre smartphone
-2. Aller dans la bibliothèque d'apps
-3. Installer **My Data DIY**
-4. Configurer :
-   - **URL** : `http://VOTRE_IP:8080/?stop=SOUI&line=1&direction=1`
-   - **Poll frequency** : 30 secondes
+### My Data DIY (simple)
 
-### Option 2 : Application personnalisée (avancé)
+1. Installer l'app **My Data DIY** sur votre LaMetric
+2. URL : `http://VOTRE_IP:8080/?stop=COMM&line=1&direction=1`
+3. Poll frequency : 30 secondes
+
+### Application personnalisée
 
 1. Créer un compte sur [developer.lametric.com](https://developer.lametric.com)
 2. Créer une **Indicator App** en mode **Poll**
-3. URL de polling :
-   ```
-   http://VOTRE_SERVEUR:8080/?stop={{stop}}&line={{line}}&direction={{direction}}&show_terminus={{show_terminus}}
-   ```
-4. Ajouter les champs utilisateur :
+3. URL : `http://VOTRE_SERVEUR:8080/?stop={{stop}}&line={{line}}&direction={{direction}}`
 
-| Nom affiché | ID | Type | Options |
-|-------------|-----|------|---------|
-| Arrêt | `stop` | Dropdown | `COMM:Commerce`, `GANO:Gare de Nantes`, `SOUI:Souillarderie`... |
-| Ligne | `line` | Text | *(optionnel)* |
-| Direction | `direction` | Dropdown | `1:Aller`, `2:Retour` |
-| Afficher destination | `show_terminus` | Checkbox | |
+---
 
-5. Fréquence de poll : **30 secondes**
+## 📖 API
 
-## API Reference
-
-### `GET /` - Temps d'attente
-
-Retourne les prochains passages formatés pour LaMetric.
+### `GET /` — Temps d'attente
 
 | Paramètre | Type | Requis | Description |
 |-----------|------|--------|-------------|
-| `stop` | string | **Oui** | Code de l'arrêt (ex: `COMM`, `SOUI`) |
-| `line` | string | Non | Numéro de ligne (ex: `1`, `2`, `C1`) |
-| `direction` | integer | Non | Direction : `1` ou `2` |
-| `limit` | integer | Non | Nombre de résultats (1-10, défaut: 2) |
-| `show_terminus` | boolean | Non | Afficher la destination (défaut: false) |
+| `stop` | string | oui | Code arrêt (ex: `COMM`, `GSNO`) |
+| `line` | string | non | Numéro de ligne (ex: `1`, `C1`) |
+| `direction` | int | non | Direction : `1` ou `2` |
+| `limit` | int | non | Nombre de résultats (1-10) |
+| `show_terminus` | bool | non | Afficher la destination |
 
-**Exemple :**
-```bash
-curl "http://localhost:8080/?stop=SOUI&line=1&direction=1"
-```
+### Autres endpoints
 
-**Réponse :**
-```json
-{
-  "frames": [
-    { "icon": "i8958", "text": "L1 3mn" },
-    { "icon": "i8958", "text": "L1 8mn" }
-  ]
-}
-```
+| Endpoint | Description |
+|----------|-------------|
+| `GET /stops?search=gare` | Recherche d'arrêts |
+| `GET /popular-stops` | Arrêts les plus fréquentés |
+| `GET /health` | Health check |
+| `GET /info` | Documentation API |
 
-### `GET /stops` - Recherche d'arrêts
+---
 
-Recherche parmi tous les arrêts du réseau TAN.
-
-| Paramètre | Type | Description |
-|-----------|------|-------------|
-| `search` | string | Terme de recherche |
-| `limit` | integer | Limite de résultats (défaut: 100) |
-
-**Exemple :**
-```bash
-curl "http://localhost:8080/stops?search=commerce"
-```
-
-**Réponse :**
-```json
-[
-  { "codeLieu": "COMM", "libelle": "Commerce" }
-]
-```
-
-### `GET /popular-stops` - Arrêts populaires
-
-Liste des arrêts les plus fréquentés (pour dropdown).
-
-```bash
-curl "http://localhost:8080/popular-stops"
-```
-
-```json
-[
-  { "code": "COMM", "name": "Commerce" },
-  { "code": "GANO", "name": "Gare de Nantes" },
-  { "code": "SOUI", "name": "Souillarderie" }
-]
-```
-
-### `GET /info` - Documentation API
-
-Retourne la documentation complète en JSON.
-
-### `GET /health` - Health check
-
-Retourne `OK` si le serveur fonctionne.
-
-## Trouver son arrêt
-
-### Méthode 1 : Recherche via l'API
-
-```bash
-# Chercher un arrêt contenant "gare"
-curl "http://localhost:8080/stops?search=gare"
-```
-
-### Méthode 2 : Liste officielle TAN
-
-Consulter : https://open.tan.fr/ewp/arrets.json
-
-### Arrêts courants
+## 🚏 Arrêts courants
 
 | Code | Nom | Lignes |
 |------|-----|--------|
 | `COMM` | Commerce | 1, 2, 3 |
-| `GANO` | Gare de Nantes | 1, C1, C6 |
-| `SOUI` | Souillarderie | 1 |
+| `GSNO` | Gare Nord - Jardin des Plantes | 1 |
 | `CRQU` | Place du Cirque | 2, 3 |
-| `MEDI` | Médiathèque | 1 |
-| `HBLI` | Hôtel de Ville | 1, C1 |
-| `CICE` | Cité des Congrès | 1, C1 |
-| `5050` | 50 Otages | 2, 3 |
+| `HVNA` | Hôtel de Ville | 1, C1 |
+| `OGVA` | Orvault Grand Val | 2 |
+| `NETR` | Neustrie | 3 |
+| `OTAG` | 50 Otages | 2, 3 |
+| `BOFA` | Bouffay | 1 |
+| `BJOI` | Beaujoire | 1 |
+| `FMIT` | François Mitterrand | 1 |
 
-## Trouver la bonne direction
+Rechercher un arrêt : `curl "http://localhost:8080/stops?search=commerce"`
 
-La direction dépend de l'arrêt et de la ligne. Pour la trouver :
+---
 
-```bash
-# Afficher tous les passages avec leur destination
-curl "http://localhost:8080/?stop=SOUI&show_terminus=true&limit=10"
-```
+## 🎨 Icônes LaMetric
 
-Résultat :
-```json
-{
-  "frames": [
-    { "text": "1 François M. 3mn" },   // direction=1
-    { "text": "1 Jamet 6mn" },          // direction=1
-    { "text": "1 Beaujoire 7mn" },      // direction=2
-    { "text": "1 Babinière 14mn" }      // direction=2
-  ]
-}
-```
+| Type | Lignes | ID |
+|------|--------|-----|
+| 🚊 Tramway | 1, 2, 3 | 8958 |
+| 🚌 Bus | Autres | 7956 |
+| ⛴️ Navibus | N1, N2... | 12186 |
+| ⚠️ Erreur | — | 555 |
 
-Puis tester :
-```bash
-# Direction 1 = François Mitterrand
-curl "http://localhost:8080/?stop=SOUI&line=1&direction=1"
+---
 
-# Direction 2 = Beaujoire
-curl "http://localhost:8080/?stop=SOUI&line=1&direction=2"
-```
+## ⚠️ Messages d'erreur
 
-## Variables d'environnement
-
-| Variable | Description | Défaut |
-|----------|-------------|--------|
-| `PORT` | Port du serveur | `8080` |
-| `NAOLIB_STOP_CODE` | Code arrêt par défaut | *(aucun)* |
-| `NAOLIB_LINE` | Ligne par défaut | *(aucun)* |
-| `NAOLIB_DIRECTION` | Direction par défaut | *(aucun)* |
-| `NAOLIB_LIMIT` | Nombre de résultats | `2` |
-
-Exemple `.env` :
-```env
-PORT=8080
-NAOLIB_STOP_CODE=SOUI
-NAOLIB_LINE=1
-NAOLIB_DIRECTION=1
-```
-
-## Docker Compose
-
-```yaml
-version: '3.8'
-services:
-  naolametric:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - PORT=8080
-    restart: unless-stopped
-```
-
-## Messages d'erreur
-
-| Affichage | Cause |
-|-----------|-------|
+| Message | Cause |
+|---------|-------|
 | `No stop` | Paramètre `stop` manquant |
 | `Bad stop` | Code d'arrêt invalide |
-| `Bad dir` | Direction invalide (doit être 1 ou 2) |
-| `API err` | Erreur de l'API TAN |
+| `Bad dir` | Direction invalide (1 ou 2) |
+| `API err` | Erreur API TAN |
 | `Aucun` | Aucun passage prévu |
 
-## Icônes
+---
 
-| Type | Lignes | Icône |
-|------|--------|-------|
-| Tramway | 1, 2, 3 | i8958 |
-| Bus | Autres | i7956 |
-| Navibus | N1, N2... | i12186 |
-| Erreur | - | i555 |
-
-## Développement
+## 🛠️ Développement
 
 ```bash
-# Mode développement
-cargo run
-
-# Tests
-cargo test
-
-# Build release
-cargo build --release
-
-# Lancer sur un port différent
-PORT=9090 cargo run
+cargo run                    # Mode dev
+cargo build --release        # Build optimisé
+PORT=9090 cargo run          # Autre port
 ```
 
-## Licence
+---
+
+## 📄 Licence
 
 MIT
 
 ## Crédits
 
-- Données temps réel : [API Naolib / TAN Nantes](https://open.tan.fr)
+- Données : [API Naolib / TAN Nantes](https://open.tan.fr)
 - Icônes : [LaMetric Icon Gallery](https://developer.lametric.com/icons)
