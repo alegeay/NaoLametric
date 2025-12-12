@@ -372,7 +372,8 @@ fn main() {
                 let key = key.trim();
                 let value = value.trim().trim_matches('"');
                 if !key.is_empty() && !key.starts_with('#') {
-                    env::set_var(key, value);
+                    // SAFETY: Un seul thread en cours d'exécution ici
+                    unsafe { env::set_var(key, value) };
                 }
             }
         }
