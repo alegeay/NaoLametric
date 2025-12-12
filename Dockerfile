@@ -5,38 +5,21 @@ ARG TARGETARCH
 
 RUN apk add --no-cache musl-dev upx
 
-# Déterminer la target en fonction de l'architecture
-# Si TARGETARCH n'est pas défini (legacy builder), on détecte l'arch native
-RUN if [ -z "$TARGETARCH" ]; then \
-        case "$(uname -m)" in \
-            x86_64) TARGETARCH=amd64 ;; \
-            aarch64) TARGETARCH=arm64 ;; \
-        esac; \
-    fi && \
-    case "$TARGETARCH" in \
-        amd64) echo "x86_64-unknown-linux-musl" > /tmp/rust_target ;; \
-        arm64) echo "aarch64-unknown-linux-musl" > /tmp/rust_target ;; \
-        *) echo "Unsupported arch: $TARGETARCH" && exit 1 ;; \
-    esac && \
-    rustup target add $(cat /tmp/rust_target)
-
 WORKDIR /app
 
 # Cache des dépendances
 COPY Cargo.toml Cargo.lock* ./
-RUN RUST_TARGET=$(cat /tmp/rust_target) \
-    && mkdir src && echo "fn main() {}" > src/main.rs \
-    && cargo build --release --target $RUST_TARGET \
+RUN mkdir src && echo "fn main() {}" > src/main.rs \
+    && cargo build --release \
     && rm -rf src
 
 # Compilation du binaire
 COPY src ./src
-RUN RUST_TARGET=$(cat /tmp/rust_target) \
-    && touch src/main.rs \
-    && cargo build --release --target $RUST_TARGET \
-    && strip target/$RUST_TARGET/release/naolametric \
-    && upx --best --lzma target/$RUST_TARGET/release/naolametric \
-    && cp target/$RUST_TARGET/release/naolametric /naolametric-bin
+RUN touch src/main.rs \
+    && cargo build --release \
+    && strip target/release/naolametric \
+    && upx --best --lzma target/release/naolametric \
+    && cp target/release/naolametric /naolametric-bin
 
 # Étape 2 : Image scratch
 FROM scratch
