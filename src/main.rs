@@ -282,8 +282,8 @@ fn formater_reponse(passages: Vec<PassageNaolib>, params: &Params) -> String {
 fn handle_principal(params: &Params) -> (u16, String) {
     // Vérifier arrêt
     let code_arret = match &params.stop {
-        Some(stop) if !stop.is_empty() => stop.clone(),
-        _ => env::var("NAOLIB_STOP_CODE").unwrap_or_default(),
+        Some(stop) if !stop.is_empty() => stop,
+        _ => &env::var("NAOLIB_STOP_CODE").unwrap_or_default(),
     };
 
     if code_arret.is_empty() {
