@@ -24,6 +24,3 @@ lto = "fat"          # Link-Time Optimization maximale
 codegen-units = 1    # Meilleure optimisation
 panic = "abort"      # Pas de unwinding
 strip = true         # Supprime symboles
-
-[profile.release.build-override]
-opt-level = "z"
