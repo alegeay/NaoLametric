@@ -102,10 +102,10 @@ fn cache_valide() -> bool {
 }
 
 fn assurer_cache_frais() {
-    if !cache_valide() {
-        if let Err(e) = rafraichir_cache() {
-            eprintln!("[WARN] Échec rafraîchissement cache : {}", e);
-        }
+    if !cache_valide()
+        && let Err(e) = rafraichir_cache()
+    {
+        eprintln!("[WARN] Échec rafraîchissement cache : {}", e);
     }
 }
 
@@ -296,10 +296,11 @@ fn handle_principal(params: &Params) -> (u16, String) {
         return (400, ReponseLaMetric::erreur("Bad stop"));
     }
 
-    if let Some(dir) = params.direction {
-        if dir != 1 && dir != 2 {
-            return (400, ReponseLaMetric::erreur("Bad dir"));
-        }
+    if let Some(dir) = params.direction
+        && dir != 1
+        && dir != 2
+    {
+        return (400, ReponseLaMetric::erreur("Bad dir"));
     }
 
     match recuperer_passages(&code_arret) {
@@ -329,10 +330,11 @@ fn handle_stops(params: &Params) -> (u16, String) {
 
     let mut count = 0;
     for (code, libelle) in &cache.liste {
-        if let Some(ref search) = params.search {
-            if !libelle.to_lowercase().contains(search) && !code.to_lowercase().contains(search) {
-                continue;
-            }
+        if let Some(ref search) = params.search
+            && !libelle.to_lowercase().contains(search)
+            && !code.to_lowercase().contains(search)
+        {
+            continue;
         }
 
         if count > 0 {
