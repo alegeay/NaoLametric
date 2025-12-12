@@ -1,5 +1,5 @@
 # Étape 1 : Compilation
-FROM rust:1.83-alpine AS builder
+FROM rust:1.92.0-alpine3.22 AS builder
 
 ARG TARGETARCH
 
