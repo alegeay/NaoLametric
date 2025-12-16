@@ -62,7 +62,7 @@ fn http_get_json<T: serde::de::DeserializeOwned>(
 // ============================================================================
 
 struct CacheArrets {
-    liste: Vec<(Box<str>, Box<str>)>, // (code, libelle)
+    liste: Vec<ArretNaolib>,
     derniere_maj: Option<Instant>,
 }
 
@@ -77,14 +77,9 @@ fn rafraichir_cache() -> Result<(), Box<dyn std::error::Error>> {
     let url = format!("{API_URL}/arrets.json");
     let arrets: Vec<ArretNaolib> = http_get_json(&url)?;
 
-    let liste: Vec<(Box<str>, Box<str>)> = arrets
-        .into_iter()
-        .map(|a| (a.code_lieu.into_boxed_str(), a.libelle.into_boxed_str()))
-        .collect();
-
     if let Ok(mut cache) = CACHE_ARRETS.write() {
-        eprintln!("[INFO] Cache rafraîchi : {} arrêts", liste.len());
-        cache.liste = liste;
+        eprintln!("[INFO] Cache rafraîchi : {} arrêts", arrets.len());
+        cache.liste = arrets;
         cache.derniere_maj = Some(Instant::now());
     }
 
@@ -114,7 +109,12 @@ fn code_arret_valide(code: &str) -> bool {
     CACHE_ARRETS
         .read()
         .ok()
-        .map(|c| c.liste.is_empty() || c.liste.iter().any(|a| a.0.eq_ignore_ascii_case(code)))
+        .map(|c| {
+            c.liste.is_empty()
+                || c.liste
+                    .iter()
+                    .any(|a| a.code_lieu.eq_ignore_ascii_case(code))
+        })
         .unwrap_or(true)
 }
 
@@ -323,10 +323,10 @@ fn handle_stops(params: &Params) -> (u16, String) {
     result.push('[');
 
     let mut count = 0;
-    for (code, libelle) in &cache.liste {
-        if let Some(ref search) = params.search
+    for ArretNaolib { code_lieu, libelle } in &cache.liste {
+        if let Some(search) = &params.search
             && !libelle.to_lowercase().contains(search)
-            && !code.to_lowercase().contains(search)
+            && !code_lieu.to_lowercase().contains(search)
         {
             continue;
         }
@@ -334,7 +334,9 @@ fn handle_stops(params: &Params) -> (u16, String) {
         if count > 0 {
             result.push(',');
         }
-        result.push_str(&format!(r#"{{"codeLieu":"{code}","libelle":"{libelle}"}}"#,));
+        result.push_str(&format!(
+            r#"{{"codeLieu":"{code_lieu}","libelle":"{libelle}"}}"#,
+        ));
         count += 1;
 
         if count >= limit {
