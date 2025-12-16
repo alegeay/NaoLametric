@@ -97,10 +97,10 @@ fn cache_valide() -> bool {
 }
 
 fn assurer_cache_frais() {
-    if !cache_valide() {
-        if let Err(e) = rafraichir_cache() {
-            eprintln!("[WARN] Échec rafraîchissement cache : {e}");
-        }
+    if !cache_valide()
+        && let Err(e) = rafraichir_cache()
+    {
+        eprintln!("[WARN] Échec rafraîchissement cache : {}", e);
     }
 }
 
@@ -290,10 +290,11 @@ fn handle_principal(params: &Params) -> (u16, String) {
         return (400, ReponseLaMetric::erreur("Bad stop"));
     }
 
-    if let Some(dir) = params.direction {
-        if dir != 1 && dir != 2 {
-            return (400, ReponseLaMetric::erreur("Bad dir"));
-        }
+    if let Some(dir) = params.direction
+        && dir != 1
+        && dir != 2
+    {
+        return (400, ReponseLaMetric::erreur("Bad dir"));
     }
 
     match recuperer_passages(code_arret) {
@@ -367,7 +368,8 @@ fn main() {
                 let key = key.trim();
                 let value = value.trim().trim_matches('"');
                 if !key.is_empty() && !key.starts_with('#') {
-                    env::set_var(key, value);
+                    // SAFETY: Un seul thread en cours d'exécution ici
+                    unsafe { env::set_var(key, value) };
                 }
             }
         }
