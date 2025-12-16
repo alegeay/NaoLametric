@@ -276,8 +276,8 @@ fn formater_reponse(passages: Vec<PassageNaolib>, params: &Params) -> String {
 fn handle_principal(params: &Params) -> (u16, String) {
     // Vérifier arrêt
     let code_arret = match &params.stop {
-        Some(stop) if !stop.is_empty() => stop.clone(),
-        _ => env::var("NAOLIB_STOP_CODE").unwrap_or_default(),
+        Some(stop) if !stop.is_empty() => stop,
+        _ => &env::var("NAOLIB_STOP_CODE").unwrap_or_default(),
     };
 
     if code_arret.is_empty() {
@@ -286,7 +286,7 @@ fn handle_principal(params: &Params) -> (u16, String) {
 
     assurer_cache_frais();
 
-    if !code_arret_valide(&code_arret) {
+    if !code_arret_valide(code_arret) {
         return (400, ReponseLaMetric::erreur("Bad stop"));
     }
 
@@ -296,7 +296,7 @@ fn handle_principal(params: &Params) -> (u16, String) {
         }
     }
 
-    match recuperer_passages(&code_arret) {
+    match recuperer_passages(code_arret) {
         Ok(passages) => (200, formater_reponse(passages, params)),
         Err(e) => {
             eprintln!("[ERROR] API Naolib : {e}");
