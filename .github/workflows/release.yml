@@ -101,6 +101,7 @@ jobs:
         with:
           generateReleaseNotes: true
           tag: v${{ env.majorMinorPatch }}
+          skipIfReleaseExists: true
 
       # Integration tests
       - name: Pull image
