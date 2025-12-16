@@ -324,12 +324,11 @@ fn handle_stops(params: &Params) -> (u16, String) {
 
     let mut count = 0;
     for ArretNaolib { code_lieu, libelle } in &cache.liste {
-        if let Some(search) = &params.search {
-            if !libelle.to_lowercase().contains(search)
-                && !code_lieu.to_lowercase().contains(search)
-            {
-                continue;
-            }
+        if let Some(search) = &params.search
+            && !libelle.to_lowercase().contains(search)
+            && !code_lieu.to_lowercase().contains(search)
+        {
+            continue;
         }
 
         if count > 0 {
