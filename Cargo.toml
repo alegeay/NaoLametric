@@ -1,7 +1,7 @@
 [package]
 name = "naolametric"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 description = "LaMetric Time app for Naolib (Nantes public transport) real-time arrivals"
 
 [dependencies]
@@ -24,6 +24,3 @@ lto = "fat"          # Link-Time Optimization maximale
 codegen-units = 1    # Meilleure optimisation
 panic = "abort"      # Pas de unwinding
 strip = true         # Supprime symboles
-
-[profile.release.build-override]
-opt-level = "z"
