@@ -74,7 +74,7 @@ static CACHE_ARRETS: LazyLock<RwLock<CacheArrets>> = LazyLock::new(|| {
 });
 
 fn rafraichir_cache() -> Result<(), Box<dyn std::error::Error>> {
-    let url = format!("{}/arrets.json", API_URL);
+    let url = format!("{API_URL}/arrets.json");
     let arrets: Vec<ArretNaolib> = http_get_json(&url)?;
 
     if let Ok(mut cache) = CACHE_ARRETS.write() {
@@ -99,7 +99,7 @@ fn cache_valide() -> bool {
 fn assurer_cache_frais() {
     if !cache_valide() {
         if let Err(e) = rafraichir_cache() {
-            eprintln!("[WARN] Échec rafraîchissement cache : {}", e);
+            eprintln!("[WARN] Échec rafraîchissement cache : {e}");
         }
     }
 }
@@ -160,17 +160,11 @@ struct ReponseLaMetric {
 
 impl ReponseLaMetric {
     fn erreur(message: &'static str) -> String {
-        format!(
-            r#"{{"frames":[{{"icon":"{}","text":"{}"}}]}}"#,
-            ICONE_ERREUR, message
-        )
+        format!(r#"{{"frames":[{{"icon":"{ICONE_ERREUR}","text":"{message}"}}]}}"#)
     }
 
     fn simple(icone: &'static str, texte: &str) -> String {
-        format!(
-            r#"{{"frames":[{{"icon":"{}","text":"{}"}}]}}"#,
-            icone, texte
-        )
+        format!(r#"{{"frames":[{{"icon":"{icone}","text":"{texte}"}}]}}"#)
     }
 }
 
@@ -220,7 +214,7 @@ fn parse_query(query: &str) -> Params {
 // ============================================================================
 
 fn recuperer_passages(code_arret: &str) -> Result<Vec<PassageNaolib>, Box<dyn std::error::Error>> {
-    let url = format!("{}/tempsattente.json/{}", API_URL, code_arret);
+    let url = format!("{API_URL}/tempsattente.json/{code_arret}");
     http_get_json(&url)
 }
 
@@ -260,7 +254,7 @@ fn formater_reponse(passages: Vec<PassageNaolib>, params: &Params) -> String {
                 } else {
                     p.terminus
                 };
-                format!("{} {} {}", p.ligne.num_ligne, terminus, p.temps)
+                format!("{} {terminus} {}", p.ligne.num_ligne, p.temps)
             } else {
                 format!("L{} {}", p.ligne.num_ligne, p.temps)
             };
@@ -282,8 +276,8 @@ fn formater_reponse(passages: Vec<PassageNaolib>, params: &Params) -> String {
 fn handle_principal(params: &Params) -> (u16, String) {
     // Vérifier arrêt
     let code_arret = match &params.stop {
-        Some(stop) if !stop.is_empty() => stop.clone(),
-        _ => env::var("NAOLIB_STOP_CODE").unwrap_or_default(),
+        Some(stop) if !stop.is_empty() => stop,
+        _ => &env::var("NAOLIB_STOP_CODE").unwrap_or_default(),
     };
 
     if code_arret.is_empty() {
@@ -292,7 +286,7 @@ fn handle_principal(params: &Params) -> (u16, String) {
 
     assurer_cache_frais();
 
-    if !code_arret_valide(&code_arret) {
+    if !code_arret_valide(code_arret) {
         return (400, ReponseLaMetric::erreur("Bad stop"));
     }
 
@@ -302,10 +296,10 @@ fn handle_principal(params: &Params) -> (u16, String) {
         }
     }
 
-    match recuperer_passages(&code_arret) {
+    match recuperer_passages(code_arret) {
         Ok(passages) => (200, formater_reponse(passages, params)),
         Err(e) => {
-            eprintln!("[ERROR] API Naolib : {}", e);
+            eprintln!("[ERROR] API Naolib : {e}");
             (502, ReponseLaMetric::erreur("API err"))
         }
     }
@@ -381,14 +375,14 @@ fn main() {
 
     eprintln!("[INFO] Chargement du cache...");
     if let Err(e) = rafraichir_cache() {
-        eprintln!("[WARN] Échec chargement cache : {}", e);
+        eprintln!("[WARN] Échec chargement cache : {e}");
     }
 
     let port = env::var("PORT").unwrap_or_else(|_| "8080".into());
-    let addr = format!("0.0.0.0:{}", port);
+    let addr = format!("0.0.0.0:{port}");
 
     let server = Server::http(&addr).expect("Impossible de démarrer le serveur");
-    eprintln!("[INFO] Serveur démarré sur {}", addr);
+    eprintln!("[INFO] Serveur démarré sur {addr}");
 
     for request in server.incoming_requests() {
         let url = request.url().to_string();
