@@ -324,22 +324,20 @@ fn handle_stops(params: &Params) -> (u16, String) {
     let mut count = 0;
     for ArretNaolib { code_lieu, libelle } in &cache.liste {
         if let Some(search) = &params.search
-            && !libelle.to_lowercase().contains(search)
-            && !code_lieu.to_lowercase().contains(search)
+            && (libelle.to_lowercase().contains(search)
+                || code_lieu.to_lowercase().contains(search))
         {
-            continue;
-        }
+            if count > 0 {
+                result.push(',');
+            }
+            result.push_str(&format!(
+                r#"{{"codeLieu":"{code_lieu}","libelle":"{libelle}"}}"#,
+            ));
+            count += 1;
 
-        if count > 0 {
-            result.push(',');
-        }
-        result.push_str(&format!(
-            r#"{{"codeLieu":"{code_lieu}","libelle":"{libelle}"}}"#,
-        ));
-        count += 1;
-
-        if count >= params.limit {
-            break;
+            if count >= params.limit {
+                break;
+            }
         }
     }
 
