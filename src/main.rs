@@ -311,11 +311,11 @@ fn handle_stops(params: &Params) -> (u16, String) {
 
     let cache = match CACHE_ARRETS.read() {
         Ok(c) => c,
-        Err(_) => return (500, r#"{"error":"Cache error"}"#.to_string()),
+        Err(_) => return (500, r#"{"error":"Cache error"}"#.to_owned()),
     };
 
     if cache.liste.is_empty() {
-        return (503, r#"{"error":"Cache not ready"}"#.to_string());
+        return (503, r#"{"error":"Cache not ready"}"#.to_owned());
     }
 
     let limit = params.limit.min(500);
@@ -386,25 +386,25 @@ fn main() {
     eprintln!("[INFO] Serveur démarré sur {addr}");
 
     for request in server.incoming_requests() {
-        let url = request.url().to_string();
+        let url = request.url().to_owned();
         let (path, query) = url.split_once('?').unwrap_or((&url, ""));
 
         let (status, body) = if *request.method() != Method::Get {
-            (405, r#"{"error":"Method not allowed"}"#.to_string())
+            (405, r#"{"error":"Method not allowed"}"#.to_owned())
         } else {
             match path {
                 "/" => {
                     let params = parse_query(query);
                     handle_principal(&params)
                 }
-                "/health" => (200, "OK".to_string()),
+                "/health" => (200, "OK".to_owned()),
                 "/stops" => {
                     let params = parse_query(query);
                     handle_stops(&params)
                 }
-                "/popular-stops" => (200, ARRETS_POPULAIRES.to_string()),
+                "/popular-stops" => (200, ARRETS_POPULAIRES.to_owned()),
                 "/info" => (200, handle_info()),
-                _ => (404, r#"{"error":"Not found"}"#.to_string()),
+                _ => (404, r#"{"error":"Not found"}"#.to_owned()),
             }
         };
 
