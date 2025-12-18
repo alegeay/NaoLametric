@@ -318,7 +318,6 @@ fn handle_stops(params: &Params) -> (u16, String) {
         return (503, r#"{"error":"Cache not ready"}"#.to_string());
     }
 
-    let limit = params.limit.min(500);
     let mut result = String::with_capacity(4096);
     result.push('[');
 
@@ -339,7 +338,7 @@ fn handle_stops(params: &Params) -> (u16, String) {
         ));
         count += 1;
 
-        if count >= limit {
+        if count >= params.limit {
             break;
         }
     }
