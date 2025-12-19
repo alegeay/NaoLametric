@@ -112,7 +112,7 @@ jobs:
           docker run -d --name naolametric-test \
             -p 8080:8080 \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ env.majorMinorPatch }}
-          sleep 3
+          sleep 10
 
       - name: Test health endpoint
         run: |
