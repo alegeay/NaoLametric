@@ -92,8 +92,7 @@ fn cache_valide() -> bool {
         .read()
         .ok()
         .and_then(|c| c.derniere_maj)
-        .map(|t| t.elapsed().as_secs() < CACHE_TTL_SECS)
-        .unwrap_or(false)
+        .is_some_and(|t| t.elapsed().as_secs() < CACHE_TTL_SECS)
 }
 
 fn assurer_cache_frais() {
@@ -106,16 +105,12 @@ fn assurer_cache_frais() {
 
 #[inline]
 fn code_arret_valide(code: &str) -> bool {
-    CACHE_ARRETS
-        .read()
-        .ok()
-        .map(|c| {
-            c.liste.is_empty()
-                || c.liste
-                    .iter()
-                    .any(|a| a.code_lieu.eq_ignore_ascii_case(code))
-        })
-        .unwrap_or(true)
+    CACHE_ARRETS.read().ok().is_none_or(|c| {
+        c.liste.is_empty()
+            || c.liste
+                .iter()
+                .any(|a| a.code_lieu.eq_ignore_ascii_case(code))
+    })
 }
 
 // ============================================================================
