@@ -300,9 +300,8 @@ fn handle_principal(params: &Params) -> (u16, String) {
 fn handle_stops(params: &Params) -> (u16, String) {
     assurer_cache_frais();
 
-    let cache = match CACHE_ARRETS.read() {
-        Ok(c) => c,
-        Err(_) => return (500, r#"{"error":"Cache error"}"#.to_owned()),
+    let Ok(cache) = CACHE_ARRETS.read() else {
+        return (500, r#"{"error":"Cache error"}"#.to_owned());
     };
 
     if cache.liste.is_empty() {
