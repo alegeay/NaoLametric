@@ -39,11 +39,7 @@ const ARRETS_POPULAIRES: &str = r#"[
 
 // Header Content-Type JSON pré-alloué
 static JSON_HEADER: LazyLock<Header> = LazyLock::new(|| {
-    Header::from_bytes(
-        &b"Content-Type"[..],
-        &b"application/json; charset=utf-8"[..],
-    )
-    .unwrap()
+    Header::from_bytes("Content-Type", "application/json; charset=utf-8").unwrap()
 });
 
 // ============================================================================
