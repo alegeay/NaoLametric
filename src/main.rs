@@ -1,6 +1,7 @@
 // NaoLaMetric - Version ultra-optimisée (stack synchrone)
 // Serveur HTTP minimaliste pour LaMetric Time
 
+use core::fmt::Write as _;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::sync::{LazyLock, RwLock};
@@ -48,7 +49,7 @@ static JSON_HEADER: LazyLock<Header> = LazyLock::new(|| {
 
 fn http_get_json<T: serde::de::DeserializeOwned>(
     url: &str,
-) -> Result<T, Box<dyn std::error::Error>> {
+) -> Result<T, Box<dyn core::error::Error>> {
     let response = minreq::get(url).with_timeout(HTTP_TIMEOUT_SECS).send()?;
     Ok(serde_json::from_str(response.as_str()?)?)
 }
@@ -69,7 +70,7 @@ static CACHE_ARRETS: LazyLock<RwLock<CacheArrets>> = LazyLock::new(|| {
     })
 });
 
-fn rafraichir_cache() -> Result<(), Box<dyn std::error::Error>> {
+fn rafraichir_cache() -> Result<(), Box<dyn core::error::Error>> {
     let url = format!("{API_URL}/arrets.json");
     let arrets: Vec<ArretNaolib> = http_get_json(&url)?;
 
@@ -95,7 +96,7 @@ fn assurer_cache_frais() {
     if !cache_valide()
         && let Err(e) = rafraichir_cache()
     {
-        eprintln!("[WARN] Échec rafraîchissement cache : {}", e);
+        eprintln!("[WARN] Échec rafraîchissement cache : {e}");
     }
 }
 
@@ -204,13 +205,13 @@ fn parse_query(query: &str) -> Params {
 // Logique métier
 // ============================================================================
 
-fn recuperer_passages(code_arret: &str) -> Result<Vec<PassageNaolib>, Box<dyn std::error::Error>> {
+fn recuperer_passages(code_arret: &str) -> Result<Vec<PassageNaolib>, Box<dyn core::error::Error>> {
     let url = format!("{API_URL}/tempsattente.json/{code_arret}");
     http_get_json(&url)
 }
 
 #[inline]
-fn icone_ligne(ligne: &str) -> &'static str {
+const fn icone_ligne(ligne: &str) -> &'static str {
     match ligne.as_bytes().first() {
         Some(b'1'..=b'3') if ligne.len() == 1 => ICONE_TRAM,
         Some(b'N') => ICONE_BATEAU,
@@ -236,6 +237,10 @@ fn formater_reponse(passages: Vec<PassageNaolib>, params: &Params) -> String {
         return ReponseLaMetric::simple(ICONE_TRAM, "Aucun");
     }
 
+    #[expect(
+        clippy::string_slice,
+        reason = "On suppose qu'il n'y a que des caractères ASCII dans les noms des arrêts"
+    )]
     let frames: Vec<FrameLaMetric> = filtres
         .into_iter()
         .map(|p| {
@@ -323,9 +328,9 @@ fn handle_stops(params: &Params) -> (u16, String) {
         if count > 0 {
             result.push(',');
         }
-        result.push_str(&format!(
-            r#"{{"codeLieu":"{code_lieu}","libelle":"{libelle}"}}"#,
-        ));
+
+        write!(result, "{{codeLieu:{code_lieu},libelle:{libelle}}}").unwrap();
+
         count += 1;
 
         if count >= params.limit {
