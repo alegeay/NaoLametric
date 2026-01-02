@@ -1,24 +1,46 @@
 # Étape 1 : Compilation
-FROM rust:1.92.0-alpine3.22 AS builder
+FROM --platform=$BUILDPLATFORM rust:1.92.0-slim-trixie AS builder
 
 ARG TARGETARCH
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 
-RUN apk add --no-cache musl-dev upx
+SHELL ["/bin/bash", "-c"]
 
-# Déterminer la target en fonction de l'architecture
-# Si TARGETARCH n'est pas défini (legacy builder), on détecte l'arch native
-RUN if [ -z "$TARGETARCH" ]; then \
-        case "$(uname -m)" in \
-            x86_64) TARGETARCH=amd64 ;; \
-            aarch64) TARGETARCH=arm64 ;; \
-        esac; \
-    fi && \
-    case "$TARGETARCH" in \
-        amd64) echo "x86_64-unknown-linux-musl" > /tmp/rust_target ;; \
-        arm64) echo "aarch64-unknown-linux-musl" > /tmp/rust_target ;; \
-        *) echo "Unsupported arch: $TARGETARCH" && exit 1 ;; \
+RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
+
+RUN apt update && \
+    apt install -y --no-install-recommends wget xz-utils musl-dev upx-ucl && \
+    rm -rf /var/cache/apt/lists && \
+    rm -rf /var/cache/apt/archives
+
+RUN case "$TARGETPLATFORM" in \
+        linux/amd64) echo "x86_64-unknown-linux-musl" > /tmp/rust_target ; \
+                     echo "x86_64" > /tmp/arch ; \
+                     echo "export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=x86_64-unknown-linux-musl-gcc" > /tmp/cc_env ; \
+                     echo "export CC=x86_64-unknown-linux-musl-gcc" >> /tmp/cc_env ;; \
+        linux/arm64) echo "aarch64-unknown-linux-musl" > /tmp/rust_target ; \
+                     echo "aarch64" > /tmp/arch ; \
+                     echo "export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=aarch64-unknown-linux-musl-gcc" > /tmp/cc_env ; \
+                     echo "export CC=aarch64-unknown-linux-musl-gcc" >> /tmp/cc_env ;; \
+        *) echo "Unsupported target arch: $TARGETPLATFORM" && exit 1 ;; \
     esac && \
     rustup target add $(cat /tmp/rust_target)
+
+RUN if [ $BUILDPLATFORM == $TARGETPLATFORM ]; then \
+        echo -n "" > /tmp/cc_env ; \
+    else \
+        if [ $BUILDPLATFORM != "linux/amd64" ]; then \
+            echo "Cross-compilation is only supported from linux/amd64 to linux/arm64" ; \
+            # cf https://github.com/cross-tools/musl-cross/issues/13#issuecomment-3437856448
+            exit 1 ; \
+        fi ; \
+        # Download a musl-targeting cross-compiler
+        wget -q https://github.com/cross-tools/musl-cross/releases/download/20250929/$(cat /tmp/arch)-unknown-linux-musl.tar.xz ; \
+        mkdir -p /opt/x-tools ; \
+        tar xf $(cat /tmp/arch)-unknown-linux-musl.tar.xz -C /opt/x-tools ; \
+        echo "export PATH=/opt/x-tools/$(cat /tmp/arch)-unknown-linux-musl/bin:$PATH" >> /tmp/cc_env ; \
+    fi
 
 WORKDIR /app
 
@@ -34,8 +56,8 @@ RUN RUST_TARGET=$(cat /tmp/rust_target) \
 COPY src ./src
 RUN RUST_TARGET=$(cat /tmp/rust_target) \
     && touch src/main.rs \
+    && source /tmp/cc_env \
     && cargo build --release --locked --target $RUST_TARGET \
-    && strip target/$RUST_TARGET/release/naolametric \
     && upx --best --lzma target/$RUST_TARGET/release/naolametric \
     && cp target/$RUST_TARGET/release/naolametric /naolametric-bin
 
