@@ -23,17 +23,18 @@ RUN if [ -z "$TARGETARCH" ]; then \
 WORKDIR /app
 
 # Cache des dépendances
-COPY Cargo.toml Cargo.lock* ./
+COPY Cargo.* ./
 RUN RUST_TARGET=$(cat /tmp/rust_target) \
     && mkdir src && echo "fn main() {}" > src/main.rs \
-    && cargo build --release --target $RUST_TARGET \
+    && source /tmp/cc_env \
+    && cargo build --release --locked --target $RUST_TARGET \
     && rm -rf src
 
 # Compilation du binaire
 COPY src ./src
 RUN RUST_TARGET=$(cat /tmp/rust_target) \
     && touch src/main.rs \
-    && cargo build --release --target $RUST_TARGET \
+    && cargo build --release --locked --target $RUST_TARGET \
     && strip target/$RUST_TARGET/release/naolametric \
     && upx --best --lzma target/$RUST_TARGET/release/naolametric \
     && cp target/$RUST_TARGET/release/naolametric /naolametric-bin
