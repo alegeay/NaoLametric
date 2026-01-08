@@ -70,6 +70,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:pr-${{ github.event.pull_request.number }}
           cache-from: type=gha
