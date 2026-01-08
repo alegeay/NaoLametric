@@ -5,6 +5,11 @@ ARG TARGETARCH
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
+ENV CROSS_COMPILER_RELEASE=20250929
+# La valeur ci-dessous est hardcodée car seule la cross-compilation de linux/amd64 -> linux/arm64
+# est supportée. On ne peut donc télécharger qu'un seul compilateur.
+ENV CROSS_COMPILER_SHA256=28a1d26f14f8ddc3aed31f20705fe696777400eb5952d90470a7e6e2dd1175bb
+
 SHELL ["/bin/bash", "-c"]
 
 RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
@@ -37,6 +42,11 @@ RUN if [ $BUILDPLATFORM == $TARGETPLATFORM ]; then \
         fi ; \
         # Download a musl-targeting cross-compiler
         wget -q https://github.com/cross-tools/musl-cross/releases/download/20250929/$(cat /tmp/arch)-unknown-linux-musl.tar.xz ; \
+        echo "$CROSS_COMPILER_SHA256 $(cat /tmp/arch)-unknown-linux-musl.tar.xz" | sha256sum --check --status ; \
+        if [ $? -ne 0 ]; then \
+            echo "Invalid checksum!" ; \
+            exit 1 ; \
+        fi ; \
         mkdir -p /opt/x-tools ; \
         tar xf $(cat /tmp/arch)-unknown-linux-musl.tar.xz -C /opt/x-tools ; \
         echo "export PATH=/opt/x-tools/$(cat /tmp/arch)-unknown-linux-musl/bin:$PATH" >> /tmp/cc_env ; \
