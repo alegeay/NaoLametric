@@ -74,6 +74,9 @@ RUN RUST_TARGET=$(cat /tmp/rust_target) \
 # Étape 2 : Image scratch
 FROM scratch
 
+# Résolution DNS
+COPY --from=builder /etc/nsswitch.conf /etc/nsswitch.conf
+
 # Copier les certificats SSL pour HTTPS
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
