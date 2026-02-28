@@ -4,6 +4,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: release
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
   REGISTRY: ghcr.io
@@ -91,10 +95,16 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Create tag
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: v${{ env.majorMinorPatch }}
-          force_push_tag: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ env.majorMinorPatch }}"
+          # Delete existing tag if present
+          gh api "repos/${{ github.repository }}/git/refs/tags/${TAG}" -X DELETE 2>/dev/null || true
+          # Create new tag via API (bypasses workflow file push restriction)
+          gh api "repos/${{ github.repository }}/git/refs" \
+            -f ref="refs/tags/${TAG}" \
+            -f sha="${{ github.sha }}"
 
       - name: Create GitHub release
         uses: ncipollo/release-action@v1
