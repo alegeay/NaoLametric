@@ -1,5 +1,5 @@
 # Étape 1 : Compilation
-FROM --platform=$BUILDPLATFORM rust:1.93.1-slim-trixie AS builder
+FROM --platform=$BUILDPLATFORM rust:1.96.0-slim-trixie AS builder
 
 ARG TARGETARCH
 ARG TARGETPLATFORM
